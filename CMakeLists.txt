@@ -4,10 +4,15 @@ cmake_minimum_required(VERSION 3.13)
 
 include($ENV{PICO_SDK_PATH}/external/pico_sdk_import.cmake)
 
-project(pico_gyro C CXX ASM)
+project(Embedded_Flight_Recorder C CXX ASM)
 pico_sdk_init()
 
-add_executable(flrc main.c)
+add_executable(flrc 
+        src/main.cpp
+        src/imu/MPU6050.cpp
+    )
+
+target_include_directories(flrc PRIVATE src)
 
 target_link_libraries(flrc
     pico_stdlib 
