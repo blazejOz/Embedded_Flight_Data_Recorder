@@ -15,6 +15,7 @@
 #define	REG_GYRO_YOUT_H		0x45
 #define	REG_GYRO_ZOUT_H		0x47
 
+// MPU6050 ID 
 #define WHO_AM_I_VALUE      0x68
 
 /*

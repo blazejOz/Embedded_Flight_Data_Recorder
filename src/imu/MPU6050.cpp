@@ -12,8 +12,6 @@ MPU6050::MPU6050(i2c_inst_t *i2c, uint8_t sda, uint8_t scl)
 
 void MPU6050::port_config()
 {
-    stdio_init_all();
-
     i2c_init(i2c, 400 * 1000);
     gpio_set_function(sda, GPIO_FUNC_I2C);
     gpio_pull_up(sda);
@@ -53,4 +51,18 @@ void MPU6050::start_sensor()
         }
     }
 
+}
+
+void MPU6050::getGyro(Gyro_t *gyro)
+{
+    uint8_t reg = REG_GYRO_XOUT_H; 
+    uint8_t buffer[6]; // 6 bytes: 2 for each: X/Y/Z axis
+
+    i2c_write_blocking(this->i2c, MPU6050_ADDR, &reg, 1, true);
+
+    i2c_read_blocking(this->i2c, MPU6050_ADDR, buffer, 6, false);
+
+    gyro->gyro_x = (buffer[0] << 8) | buffer[1];
+    gyro->gyro_y = (buffer[2] << 8) | buffer[3];
+    gyro->gyro_z = (buffer[4] << 8) | buffer[5];
 }
