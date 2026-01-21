@@ -1,5 +1,6 @@
 #include "pico/stdlib.h"
 #include "pico/cyw43_arch.h"
+#include "FatFsSd.h"
 #include "imu/MPU6050.h"
 
 
@@ -7,6 +8,9 @@
 int main()
 {
     stdio_init_all();
+    sleep_ms(2000);
+
+    printf("--- Flight Data Recorder Starting ---\n");
 
     MPU6050 mpu(i2c0, 4, 5);
 

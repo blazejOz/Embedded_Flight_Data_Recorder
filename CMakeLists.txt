@@ -13,12 +13,16 @@ add_executable(flrc
     )
 
 target_include_directories(flrc PRIVATE src)
+target_include_directories(flrc PRIVATE external_lib/no-OS-FatFS-SD-SDIO-SPI-RPi-Pico/include)
+
+add_subdirectory(external_lib/no-OS-FatFS-SD-SDIO-SPI-RPi-Pico/src build)
 
 target_link_libraries(flrc
     pico_stdlib 
     pico_cyw43_arch_none
-    hardware_adc
     hardware_i2c
+    hardware_spi
+    no-OS-FatFS-SD-SDIO-SPI-RPi-Pico
 )
 
 # Enable USB output (serial)
