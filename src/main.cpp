@@ -8,33 +8,26 @@ int main() {
     stdio_init_all();
     sleep_ms(3000); 
     
-    printf("\n--- Starting SD Card Test ---\n");
+    printf("\n--- Starting Flight Recorder ---\n");
 
     Recorder recorder;
+    MPU6050 mpu(i2c0, 4, 5); 
+    Gyro_t current_gyro;
 
-    while(true) {
-        tight_loop_contents(); 
-    }
-}
+    //record for 10s
+    absolute_time_t end_time = make_timeout_time_ms(10000);
+    while(get_absolute_time() < end_time) {
+        mpu.getGyro(&current_gyro);
 
 
-/*
-int main()
-{
-    stdio_init_all();
+        recorder.log_data(current_gyro);
 
-    MPU6050 mpu(i2c0, 4, 5);
+        printf("Logged: X:%d Y:%d Z:%d\n", current_gyro.gyro_x, current_gyro.gyro_y, current_gyro.gyro_z);
 
-    Gyro_t data;
-    while(true) {
-        mpu.getGyro(&data);
-
-        printf("X: %6d | Y: %6d | Z: %6d\n", data.gyro_x, data.gyro_y, data.gyro_z);
-        sleep_ms(100);
+        sleep_ms(50); 
     }
 
-
-
+    printf("10 Seconds Done. SAFE TO UNPLUG.\n");
+    while(true) tight_loop_contents();
 }
-    */
    
