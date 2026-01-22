@@ -47,45 +47,41 @@ extern "C" {
 Recorder::Recorder()
 {
     printf("\n--- CRATED OBJECT RECORDER ---\n");
-    init_sensor();
+    init_sd();
 }
 
-int Recorder::init_sensor()
+int Recorder::init_sd()
 {
     // Initialize the driver
     sd_init_driver(); 
 
     // Add the card to the system
     this->card_p = FatFsNs::FatFs::add_sd_card(&sd_card_config);
-
-    // Attempt to mount
-    FRESULT fr = this->card_p->mount();
-    if (fr != FR_OK) {
-        printf("Mount FAILED! Error: %d\n", fr);
-        return fr;
-    }
-    printf("Mount SUCCESS!\n");
-    return fr;
-
+    return 0;
 }
 
-int Recorder::write_to_sd()
-{
-    // Create and write file
+int Recorder::log_data(const Gyro_t& data) {
+    // 1. Ensure mounted
+    FRESULT fr = this->card_p->mount();
+    if (fr != FR_OK) return (int)fr;
+
     FatFsNs::File file;
-    FRESULT fr = file.open("hello.txt", FA_WRITE | FA_CREATE_ALWAYS);
+    
+
+    fr = file.open("0:flight_data.csv", FA_WRITE | FA_OPEN_APPEND);
     
     if (fr == FR_OK) {
-        file.puts("Hello from Pico 2 W!\n");
-        file.puts("This file was created using the C++ Wrapper.\n");
+        char buffer[64];
+        sprintf(buffer, "%d, %d, %d\n", data.gyro_x, data.gyro_y, data.gyro_z);
+        file.puts(buffer);
+
         file.close();
-        printf("SUCCESS: 'hello.txt' created.\n");
     } else {
-        printf("File open FAILED! Error: %d\n", fr);
+        printf("Log failed: %d\n", fr);
     }
-
-    card_p->unmount();
-    printf("Done. You can unplug the card now.\n");
-
-
+    
+    // this->card_p->unmount(); 
+    
+    return (int)fr;
 }
+

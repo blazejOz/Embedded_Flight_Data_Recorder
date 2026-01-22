@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <vector>
 #include <string.h>
 
 #include "../imu/MPU6050.h"
@@ -9,11 +10,12 @@
 
 class Recorder {
 public:
-    FatFsNs::SdCard* card_p = nullptr;
     Recorder();
-    int write_to_sd();
+    FatFsNs::SdCard* card_p = nullptr;
+
+    int log_data(const Gyro_t& data);
 
 private:
-    int init_sensor();
+    int init_sd();
 
 };
