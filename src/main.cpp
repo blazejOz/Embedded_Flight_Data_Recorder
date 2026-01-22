@@ -12,6 +12,8 @@ int main() {
 
     Recorder recorder;
 
+    recorder.write_to_sd();
+
     while(true) {
         tight_loop_contents(); 
     }
@@ -36,5 +38,5 @@ int main()
 
 
 }
-    */
+*/
    
