@@ -21,13 +21,15 @@
           gcc-arm-embedded
           python3
           picotool
+          openocd-rp2040
         ];
 
         shellHook = ''
           export PICO_SDK_PATH="${pico-sdk-src}"
           export PICO_BOARD=pico2_w
           
-          echo "🚀 Pico 2 W Environment Active (Full SDK with Submodules)"
+          echo "Pico 2 W Environment Active (Full SDK with Submodules)"
+          
         '';
       };
     };

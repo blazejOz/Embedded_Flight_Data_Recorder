@@ -3,11 +3,20 @@
 #include "FatFsSd.h"
 #include "imu/MPU6050.h"
 #include "recorder/Recorder.h"
+#include "utils/utils.cpp"
 
 int main() {
     stdio_init_all();
     sleep_ms(3000); 
     
+    Utils::turnOn_green();
+
+    sleep_ms(6000); 
+
+    Utils::handle_error("TEST RED LED");
+
+
+/*
     printf("\n--- Starting Flight Recorder ---\n");
 
     Recorder recorder;
@@ -28,6 +37,7 @@ int main() {
     }
 
     printf("10 Seconds Done. SAFE TO UNPLUG.\n");
+*/
     while(true) tight_loop_contents();
 }
    
