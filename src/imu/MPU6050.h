@@ -3,6 +3,8 @@
 #include "hardware/i2c.h"
 #include <cstdio>  
 #include <cstdint> 
+#include "../utils/utils.cpp"
+
 
 //I2C 
 #define MPU6050_ADDR        0x68

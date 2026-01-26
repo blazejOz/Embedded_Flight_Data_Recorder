@@ -46,7 +46,7 @@ extern "C" {
 
 Recorder::Recorder()
 {
-    printf("\n--- CRATED OBJECT RECORDER ---\n");
+    printf("\n--- RECORDER  INITIALIZED ---\n");
     init_sd();
 }
 
@@ -61,9 +61,9 @@ int Recorder::init_sd()
 }
 
 int Recorder::log_data(const Gyro_t& data) {
-    // 1. Ensure mounted
+    // Ensure mounted
     FRESULT fr = this->card_p->mount();
-    if (fr != FR_OK) return (int)fr;
+    if (fr != FR_OK) Utils::handle_error("SD CARD: Mount Error!");
 
     FatFsNs::File file;
     
@@ -77,10 +77,10 @@ int Recorder::log_data(const Gyro_t& data) {
 
         file.close();
     } else {
-        printf("Log failed: %d\n", fr);
+        Utils::handle_error("SD CARD: Write to file Error!");
     }
     
-    // this->card_p->unmount(); 
+    this->card_p->unmount(); 
     
     return (int)fr;
 }

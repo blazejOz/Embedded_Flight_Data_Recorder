@@ -45,10 +45,7 @@ void MPU6050::start_sensor()
     sleep_ms(600);
     
     if (who_am_i != WHO_AM_I_VALUE) {
-        while (true) {
-            printf("MPU6050 not found!\n");
-            sleep_ms(1000);
-        }
+        Utils::handle_error("MPU: ID Error");
     }
 
 }

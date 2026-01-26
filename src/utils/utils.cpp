@@ -36,7 +36,7 @@ namespace Utils
         gpio_put(GREEN_LED_PIN, 0);
     }
 
-    void handle_error(std::string& msg)
+    void handle_error(std::string msg)
     {
         turnOff_green();
         while(true){
@@ -51,7 +51,7 @@ namespace Utils
     bool is_button_clicked()
     {
         if (gpio_get(BTN_PIN) == 0) {
-            //debounce
+            // Debounce
             sleep_ms(50);
             if (gpio_get(BTN_PIN) != 0) return false;
 
