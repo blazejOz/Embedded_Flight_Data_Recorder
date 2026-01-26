@@ -1,10 +1,8 @@
-#include "pico/stdlib.h"
-#include <string>
+#include "Utils.h"
 #include <iostream>
 
 #define RED_LED_PIN 15
 #define GREEN_LED_PIN 14
-
 #define BTN_PIN 13
 
 
@@ -36,7 +34,7 @@ namespace Utils
         gpio_put(GREEN_LED_PIN, 0);
     }
 
-    void handle_error(std::string msg)
+    void handle_error(const char* msg)
     {
         turnOff_green();
         while(true){

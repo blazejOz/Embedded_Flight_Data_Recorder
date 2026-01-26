@@ -3,13 +3,14 @@
 #include "FatFsSd.h"
 #include "imu/MPU6050.h"
 #include "recorder/Recorder.h"
-#include "utils/utils.cpp"
+#include "utils/Utils.h"
 
 int main() {
     stdio_init_all();
     sleep_ms(3000); 
     
     Utils::init_hardware();
+    Recorder recorder;
 
     while(true){
         if(Utils::is_button_clicked()){
@@ -20,13 +21,17 @@ int main() {
         sleep_ms(50);
     }
 
-    Recorder recorder;
     MPU6050 mpu(i2c0, 4, 5); 
     Gyro_t current_gyro;
 
-    //record for 10s
-    absolute_time_t end_time = make_timeout_time_ms(10000);
-    while(get_absolute_time() < end_time) {
+
+    while(true) {
+        if(Utils::is_button_clicked()){
+            Utils::turnOff_green();
+            std::cout << "\n--- Stoping Flight Recorder ---\n" << std::endl;
+            break;
+        }
+
         mpu.getGyro(&current_gyro);
 
 
@@ -36,8 +41,6 @@ int main() {
 
         sleep_ms(50); 
     }
-
-    printf("10 Seconds Done. SAFE TO UNPLUG.\n");
 
     while(true) tight_loop_contents();
 }
