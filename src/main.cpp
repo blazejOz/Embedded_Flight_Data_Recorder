@@ -9,15 +9,16 @@ int main() {
     stdio_init_all();
     sleep_ms(3000); 
     
-    Utils::turnOn_green();
+    Utils::init_hardware();
 
-    sleep_ms(6000); 
-
-    Utils::handle_error("TEST RED LED");
-
-
-/*
-    printf("\n--- Starting Flight Recorder ---\n");
+    while(true){
+        if(Utils::is_button_clicked()){
+            Utils::turnOn_green();
+            std::cout << "\n--- Starting Flight Recorder ---\n" << std::endl;
+            break;
+        }
+        sleep_ms(50);
+    }
 
     Recorder recorder;
     MPU6050 mpu(i2c0, 4, 5); 
@@ -37,7 +38,7 @@ int main() {
     }
 
     printf("10 Seconds Done. SAFE TO UNPLUG.\n");
-*/
+
     while(true) tight_loop_contents();
 }
    
