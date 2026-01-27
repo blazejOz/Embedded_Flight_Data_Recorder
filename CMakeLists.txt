@@ -11,7 +11,7 @@ add_executable(flrc
         src/main.cpp
         src/imu/MPU6050.cpp
         src/recorder/Recorder.cpp
-        src/utils/Utils.cpprm -rf *
+        src/utils/Utils.cpp
     )
 
 target_include_directories(flrc PRIVATE src)

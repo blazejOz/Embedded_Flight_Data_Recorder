@@ -14,9 +14,13 @@ public:
     Recorder();
     FatFsNs::SdCard* card_p = nullptr;
 
-    int log_data(const Gyro_t& data);
+    void start_recording();
+    void log_data(const Gyro_t& data);
+    void stop_recording();
 
 private:
+    FatFsNs::File file; 
+    bool is_open = false;
     int init_sd();
 
 };

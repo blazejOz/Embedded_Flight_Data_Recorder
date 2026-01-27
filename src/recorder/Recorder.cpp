@@ -60,28 +60,35 @@ int Recorder::init_sd()
     return 0;
 }
 
-int Recorder::log_data(const Gyro_t& data) {
-    // Ensure mounted
-    FRESULT fr = this->card_p->mount();
-    if (fr != FR_OK) Utils::handle_error("SD CARD: Mount Error!");
-
-    FatFsNs::File file;
-    
-
-    fr = file.open("0:flight_data.csv", FA_WRITE | FA_OPEN_APPEND);
-    
+void Recorder::start_recording() 
+{
+    this->card_p->mount();
+    FRESULT fr = file.open("0:flight_data.csv", FA_WRITE | FA_OPEN_APPEND);
     if (fr == FR_OK) {
-        char buffer[64];
-        sprintf(buffer, "%d, %d, %d\n", data.gyro_x, data.gyro_y, data.gyro_z);
-        file.puts(buffer);
-
-        file.close();
-    } else {
-        Utils::handle_error("SD CARD: Write to file Error!");
+        is_open = true;
+        return;
     }
-    
-    this->card_p->unmount(); 
-    
-    return (int)fr;
+    Utils::handle_error("SD Open Failed");
 }
+
+void Recorder::log_data(const Gyro_t& data) 
+{
+    if(!is_open) return;
+
+    char buffer[64];
+    sprintf(buffer, "%d, %d, %d\n", data.gyro_x, data.gyro_y, data.gyro_z);
+    file.puts(buffer);
+    file.sync();
+}
+
+void Recorder::stop_recording()
+{
+    if(is_open){
+        file.close();
+        is_open = false;
+        this->card_p->unmount();
+        std::cout << "File Closed and unmounted" << std::endl;
+    }
+}
+
 

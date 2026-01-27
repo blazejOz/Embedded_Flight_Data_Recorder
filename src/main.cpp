@@ -15,6 +15,7 @@ int main() {
     while(true){
         if(Utils::is_button_clicked()){
             Utils::turnOn_green();
+            recorder.start_recording();
             std::cout << "\n--- Starting Flight Recorder ---\n" << std::endl;
             break;
         }
@@ -28,13 +29,12 @@ int main() {
     while(true) {
         if(Utils::is_button_clicked()){
             Utils::turnOff_green();
+            recorder.stop_recording();
             std::cout << "\n--- Stoping Flight Recorder ---\n" << std::endl;
             break;
         }
 
         mpu.getGyro(&current_gyro);
-
-
         recorder.log_data(current_gyro);
 
         printf("Logged: X:%d Y:%d Z:%d\n", current_gyro.gyro_x, current_gyro.gyro_y, current_gyro.gyro_z);
@@ -42,6 +42,5 @@ int main() {
         sleep_ms(50); 
     }
 
-    while(true) tight_loop_contents();
 }
    
