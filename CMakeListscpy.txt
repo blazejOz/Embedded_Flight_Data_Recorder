@@ -1,0 +1,37 @@
+cmake_minimum_required(VERSION 3.13)
+
+set(PICO_BOARD pico2 CACHE STRING "Board type")
+
+include($ENV{PICO_SDK_PATH}/external/pico_sdk_import.cmake)
+
+project(Embedded_Flight_Recorder C CXX ASM)
+pico_sdk_init()
+set(FREERTOS_KERNEL_PATH "${CMAKE_CURRENT_LIST_DIR}/external_lib/FreeRTOS-Kernel" CACHE PATH "")
+include(FreeRTOS_Kernel_import.cmake)
+
+add_executable(flrc 
+        src/main.cpp
+        src/imu/MPU6050.cpp
+        src/recorder/Recorder.cpp
+        src/utils/Utils.cpp
+    )
+
+target_include_directories(flrc PRIVATE src)
+target_include_directories(flrc PRIVATE external_lib/no-OS-FatFS-SD-SDIO-SPI-RPi-Pico/include)
+
+add_subdirectory(external_lib/no-OS-FatFS-SD-SDIO-SPI-RPi-Pico/src build)
+
+target_link_libraries(flrc
+    pico_stdlib 
+    hardware_i2c
+    hardware_spi
+    no-OS-FatFS-SD-SDIO-SPI-RPi-Pico
+
+    FreeRTOS-Kernel
+    FreeRTOS-Kernel-Heap4
+)
+
+# Enable USB output (serial)
+pico_enable_stdio_usb(flrc 1)
+pico_enable_stdio_uart(flrc 0)
+pico_add_extra_outputs(flrc)
