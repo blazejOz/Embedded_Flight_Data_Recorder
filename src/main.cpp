@@ -5,15 +5,67 @@
 #include "utils/Utils.h"
 #include "pinout.h"
 
+//FREERTOS
+#include <FreeRTOS.h>
+#include <task.h>
+#include <queue.h>
+
+struct DataPack
+{
+    uint32_t timestamp;
+    Gyro_t gyro;
+    Accel_t accel;
+};
+
+QueueHandle_t dataQueue = nullptr;
+
+void vSensorTask(void* pvParam)
+{
+    MPU6050* imu = (MPU6050*)pvParam;
+    DataPack pack;
+    TickType_t xLastWakeTime = xTaskGetTickCount();
+    const TickType_t xFrequency = pdMS_TO_TICKS(10);
+    
+    while(true){
+        Utils::turnOn_green();
+        pack.timestamp = to_ms_since_boot(get_absolute_time());
+        imu->getGyro(&pack.gyro);
+        imu->getAccel(&pack.accel);
+
+        xQueueSend(dataQueue, &pack, 0);
+        vTaskDelayUntil(&xLastWakeTime, xFrequency);
+    }
+
+}
+
+void vLoggerTask(void *pvParameters) {
+    Recorder* recorder = (Recorder*)pvParameters;
+    DataPack pack;
+
+    while (true) {
+        if (xQueueReceive(dataQueue, &pack, portMAX_DELAY) == pdTRUE) {
+            
+            // Log the data to the SD card
+            recorder->log_data(pack.timestamp, pack.gyro, pack.accel);
+            // printf("Logged: %lu Gyro X:%d Y:%d Z:%d Accel X:%d Y:%d Z:%d \n", 
+            //        pack.timestamp, 
+            //        pack.gyro.x, pack.gyro.y, pack.gyro.z, 
+            //        pack.accel.x, pack.accel.y, pack.accel.z);
+            Utils::turnOff_green();
+        }
+    }
+}
+
 int main() {
     stdio_init_all();
-    sleep_ms(3000); 
+    sleep_ms(4000); 
     
     
     Utils::init(START_BTN_PIN, GREEN_LED_PIN, RED_LED_PIN);
-    MPU6050 mpu(MPU_I2C_PORT, MPU_SDA_PIN, MPU_SCL_PIN); 
-    Recorder recorder(SD_SPI_PORT, SD_MISO_PIN, SD_MOSI_PIN, SD_SCK_PIN, SD_CS_PIN);
+    static MPU6050 mpu(MPU_I2C_PORT, MPU_SDA_PIN, MPU_SCL_PIN); 
+    static Recorder recorder(SD_SPI_PORT, SD_MISO_PIN, SD_MOSI_PIN, SD_SCK_PIN, SD_CS_PIN);
 
+    //Hold Button to start
     while(true){
         if(Utils::is_button_clicked()){
             Utils::turnOn_green();
@@ -24,26 +76,33 @@ int main() {
         sleep_ms(50);
     }
 
-    Gyro_t g;
-    Accel_t a;
-    uint32_t timestamp;
-
-    while(true) {
-        if(Utils::is_button_clicked()){
-            Utils::turnOff_green();
-            recorder.stop_recording();
-            printf("\n--- Stoping Flight Recorder ---\n");
-            break;
-        }
-        timestamp = to_ms_since_boot(get_absolute_time());
-        mpu.getGyro(&g);
-        mpu.getAccel(&a);
-        recorder.log_data(timestamp, g, a);
-
-        printf("Logged: %d Gyro X:%d Y:%d Z:%d Accel X:%d Y:%d Z:%d \n", timestamp, g.x, g.y, g.z , a.x, a.y, a.z) ;
-
-        sleep_ms(50); 
+    dataQueue = xQueueCreate(10, sizeof(DataPack) );
+    if(dataQueue == NULL){
+        Utils::handle_error("Create Queue\n");
+        while(1);
     }
+
+
+    xTaskCreate(
+        vSensorTask,    //Function
+        "IMU_READER",   //Name for debugging
+        2048,           //Stack size
+        &mpu,           // Param passed 
+        2,              // Priority
+        NULL            // Task handle
+    );
+
+    xTaskCreate(
+        vLoggerTask,        // Function name
+        "SD_Logger",        // Text name for debugging
+        4096,               // Stack size 
+        &recorder,          // Parameter passed to the task
+        1,                  // Priority 
+        NULL                // Task handle
+    );
+
+    vTaskStartScheduler();
+    while(1); 
 
 }
    
