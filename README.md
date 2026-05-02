@@ -3,7 +3,10 @@
 
 Embedded Avionics Data Logger (C++ / RP2350)
 
-A flight data recorder(aka "Black Box") built for the Raspberry Pi Pico 2(RP2350). This project captures real-time motion data from an MPU6050 IMU and logs it to an SD card using a custom C++ wrapper around the FatFs filesystem provided by carlk3 (https://github.com/carlk3/no-OS-FatFS-SD-SDIO-SPI-RPi-Pico)
+A high-reliability **Flight Data Recorder ("Black Box")** built for the **Raspberry Pi Pico 2 (RP2350)**. 
+
+This project captures real-time motion data from an **MPU6050 IMU** and logs it to an SD card via the **no-OS-FatFS-SD-SDIO-SPI-RPi-Pico** library. To guarantee zero data loss during high-latency SPI writes to the SD card, the system leverages **FreeRTOS** to handle everything in the background. By splitting the work into two independent threads—one that reads the sensor and another that writes to the card—the recorder never drops a single data point.
+
 
 ![Recorder Demo](assets/demo.gif)
 
@@ -14,25 +17,6 @@ A flight data recorder(aka "Black Box") built for the Raspberry Pi Pico 2(RP2350
 * **Storage:** MicroSD Card Module (SPI Mode)
 * **Interface:** Tactile Button & Status LEDs
 
-### Wiring Diagram
-
-| Component | Pin Label | Pico Pin | Function |
-| :--- | :--- | :--- | :--- |
-| **MPU6050** | SDA | GP4 | I2C Data |
-| **MPU6050** | SCL | GP5 | I2C Clock |
-| **MPU6050** | VCC | 3V3 | Power |
-| **MPU6050** | GND | GND | Ground |
-| | | | |
-| **SD Card** | DI (MOSI)| GP19 | SPI TX |
-| **SD Card** | DO (MISO)| GP16 | SPI RX |
-| **SD Card** | SCK | GP18 | SPI Clock |
-| **SD Card** | CS | GP17 | Chip Select |
-| **SD Card** | VCC | 3V3 | Power |
-| **SD Card** | GND | GND | Ground |
-| | | | |
-| **Control** | Button | GP13 | Start/Stop Trigger |
-| **Status** | Green LED | GP14 | Ready / Recording |
-| **Status** | Red LED | GP15 | Error Indicator |
 
 ## Software Design
 
@@ -47,10 +31,13 @@ This project utilizes the **no-OS-FatFS-SD-SDIO-SPI-RPi-Pico** library for robus
 * **Library Author:** Carl John Kugler III
 * **Source:** [https://github.com/carlk3/no-OS-FatFS-SD-SDIO-SPI-RPi-Pico](https://github.com/carlk3/no-OS-FatFS-SD-SDIO-SPI-RPi-Pico)
 
+This project utilizes the **FreeRTOS-Kernel** library for mutithreading.
+* **Library Author:** FreeRTOS
+* **Source:** [https://github.com/FreeRTOS/FreeRTOS-Kernel](https://github.com/FreeRTOS/FreeRTOS-Kernel)
+
 ## Build Instructions
 
 Built using the standard Raspberry Pi Pico SDK and CMake
-For Nixos users use flake - nix develop
 
 ```bash
 cmake -B build
@@ -63,6 +50,6 @@ cmake --build build
 - [x] **Manual Start/Stop Control** (Button + LED feedback)
 - [x] **Gyroscope Data Capture** (X/Y/Z)
 - [x] **Add Accelerometer Data:** Expand MPU6050 driver to capture acceleration.
-- [ ] **Error Codes:** Instead of just one LED, use different blink patterns.
+- [x] **Error Codes:** Instead of just one LED, use different blink patterns.
 - [x] **Timestamps:** Add millisecond precision timestamps to the log.
-- [ ] **FreeRTOS:** Refactor the codebase into prioritized Tasks (Sensing vs. Logging) using FreeRTOS to prevent SD card latency.
+- [x] **FreeRTOS:** Refactor the codebase into prioritized Tasks (Sensing vs. Logging) using FreeRTOS to prevent SD card latency.
