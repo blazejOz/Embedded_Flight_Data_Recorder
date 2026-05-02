@@ -33,7 +33,7 @@ pico_sdk_init()
 set(FREERTOS_KERNEL_PATH "${CMAKE_CURRENT_LIST_DIR}/external_lib/FreeRTOS-Kernel" CACHE PATH "")
 include(FreeRTOS_Kernel_import.cmake)
 
-#Add no-OS-FatFS Library
+# Add no-OS-FatFS Library
 add_subdirectory(external_lib/no-OS-FatFS-SD-SDIO-SPI-RPi-Pico/src build)
 
 #Create the executable - flrc
@@ -44,7 +44,7 @@ add_executable(flrc
     src/utils/Utils.cpp
 )
 
-#Add FreeRTOSConfig.h to the kernel 
+# Add FreeRTOSConfig.h to the kernel 
 add_library(freertos_config INTERFACE)
 target_include_directories(freertos_config SYSTEM INTERFACE ${CMAKE_CURRENT_LIST_DIR}/src)
 target_compile_definitions(freertos_config INTERFACE projCOVERAGE_TEST=0)

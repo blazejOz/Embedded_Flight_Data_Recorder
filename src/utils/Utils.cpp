@@ -34,6 +34,10 @@ namespace Utils
         gpio_put(GREEN_LED_PIN, 0);
     }
 
+    void turnOn_red(){
+        gpio_put(RED_LED_PIN, 1);
+    }
+
     void handle_error(const char* msg)
     {
         turnOff_green();
@@ -62,7 +66,7 @@ namespace Utils
                 hold_time += 100;
 
                 if(hold_time >= 1500) {
-                    printf("button clicked");
+                    printf("button clicked\n");
                     while(gpio_get(START_BTN_PIN) == 0) sleep_ms(10);
                     return true;
                 }

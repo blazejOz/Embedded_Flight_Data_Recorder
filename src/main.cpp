@@ -18,6 +18,7 @@ struct DataPack
 };
 
 QueueHandle_t dataQueue = nullptr;
+TaskHandle_t xSensorTaskHandle = nullptr;
 
 void vSensorTask(void* pvParam)
 {
@@ -38,22 +39,52 @@ void vSensorTask(void* pvParam)
 
 }
 
-void vLoggerTask(void *pvParameters) {
+void vLoggerTask(void *pvParameters) 
+{
     Recorder* recorder = (Recorder*)pvParameters;
     DataPack pack;
 
     while (true) {
         if (xQueueReceive(dataQueue, &pack, portMAX_DELAY) == pdTRUE) {
+            Utils::turnOff_green();
             
             // Log the data to the SD card
             recorder->log_data(pack.timestamp, pack.gyro, pack.accel);
-            // printf("Logged: %lu Gyro X:%d Y:%d Z:%d Accel X:%d Y:%d Z:%d \n", 
-            //        pack.timestamp, 
-            //        pack.gyro.x, pack.gyro.y, pack.gyro.z, 
-            //        pack.accel.x, pack.accel.y, pack.accel.z);
-            Utils::turnOff_green();
+            printf("Logged: %lu Gyro X:%d Y:%d Z:%d Accel X:%d Y:%d Z:%d \n", 
+                   pack.timestamp, 
+                   pack.gyro.x, pack.gyro.y, pack.gyro.z, 
+                   pack.accel.x, pack.accel.y, pack.accel.z);
         }
     }
+}
+
+void vShutDownTask(void * pvParams)
+{
+    Recorder* recorder = (Recorder*)pvParams;
+
+    while(true){
+        if(Utils::is_button_clicked()){
+            if(xSensorTaskHandle != nullptr){
+                vTaskSuspend(xSensorTaskHandle);
+            }
+
+            DataPack leftover;
+            while(uxQueueMessagesWaiting(dataQueue) > 0){
+                if(xQueueReceive(dataQueue, &leftover, pdMS_TO_TICKS(10)) == pdTRUE){
+                    recorder->log_data(leftover.timestamp, leftover.gyro, leftover.accel);
+                }
+            }
+
+            recorder->stop_recording();
+
+            Utils::turnOff_green();
+            Utils::turnOn_red();
+            printf("\n--- Flight Recorder Stopped Safely ---\n");
+            vTaskSuspend(NULL);
+        }
+        vTaskDelay(pdMS_TO_TICKS(50));
+    }
+
 }
 
 int main() {
@@ -82,27 +113,34 @@ int main() {
         while(1);
     }
 
-
     xTaskCreate(
-        vSensorTask,    //Function
-        "IMU_READER",   //Name for debugging
-        2048,           //Stack size
-        &mpu,           // Param passed 
-        2,              // Priority
-        NULL            // Task handle
+        vSensorTask,        // Function
+        "IMU_READER",       // Name for debugging
+        2048,               // Stack size
+        &mpu,               // Param passed 
+        2,                  // Priority
+        &xSensorTaskHandle  // Task handle
     );
 
     xTaskCreate(
-        vLoggerTask,        // Function name
-        "SD_Logger",        // Text name for debugging
-        4096,               // Stack size 
-        &recorder,          // Parameter passed to the task
-        1,                  // Priority 
-        NULL                // Task handle
+        vLoggerTask,        
+        "SD_Logger",       
+        4096,            
+        &recorder,          
+        1,                  
+        NULL                
+    );
+
+    xTaskCreate(
+        vShutDownTask,
+        "ShutDown_Task",
+        2048,
+        &recorder,
+        3,
+        NULL
     );
 
     vTaskStartScheduler();
     while(1); 
-
 }
    
